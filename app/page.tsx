@@ -11,16 +11,30 @@ export default function Home() {
   const sessionId = useSessionId();
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [erro, setErro] = useState(false);
 
   useEffect(() => {
     if (!sessionId) return;
 
+    let cancelado = false;
+
     fetch(`/api/attempts?sessionId=${sessionId}`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("Falha ao carregar histórico.");
+        return res.json();
+      })
       .then((data: Attempt[]) => {
+        if (cancelado) return;
         setAttempts(data);
         setLoaded(true);
+      })
+      .catch(() => {
+        if (!cancelado) setErro(true);
       });
+
+    return () => {
+      cancelado = true;
+    };
   }, [sessionId]);
 
   const unlocked = computeUnlockedLevels(attempts);
@@ -63,6 +77,13 @@ export default function Home() {
           );
         })}
       </div>
+
+      {erro && (
+        <p className="max-w-sm text-center text-sm text-error">
+          [ERRO] Não foi possível carregar seu histórico. Os níveis exibidos
+          podem estar desatualizados.
+        </p>
+      )}
 
       <HistoryList attempts={attempts} />
     </main>

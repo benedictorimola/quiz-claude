@@ -10,6 +10,8 @@ type ResultScreenProps = {
   desbloqueouProximo: boolean;
   enviando: boolean;
   duracaoSegundos: number | null;
+  erroEnvio?: string | null;
+  onRetryEnvio?: () => void;
 };
 
 export default function ResultScreen({
@@ -19,6 +21,8 @@ export default function ResultScreen({
   desbloqueouProximo,
   enviando,
   duracaoSegundos,
+  erroEnvio,
+  onRetryEnvio,
 }: ResultScreenProps) {
   const percentual = Math.round((acertos / total) * 100);
 
@@ -44,6 +48,19 @@ export default function ResultScreen({
         <div className="mt-4 border-t border-surface-2 pt-4">
           {enviando ? (
             <p className="text-text-dim">Salvando resultado…</p>
+          ) : erroEnvio ? (
+            <div className="flex flex-col items-center gap-2">
+              <p className="text-error">[ERRO] {erroEnvio}</p>
+              {onRetryEnvio && (
+                <button
+                  type="button"
+                  onClick={onRetryEnvio}
+                  className="rounded-md border border-accent px-4 py-2 text-accent transition-colors hover:bg-accent/10"
+                >
+                  Tentar novamente
+                </button>
+              )}
+            </div>
           ) : (
             <p className={desbloqueouProximo ? "text-success" : "text-error"}>
               {desbloqueouProximo
