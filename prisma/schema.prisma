@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Question {
+  id              String   @id @default(cuid())
+  nivel           Nivel
+  topico          Topico
+  enunciado       String
+  respostaCorreta Boolean
+  explicacao      String
+  createdAt       DateTime @default(now())
+
+  @@index([nivel])
+}
+
+model Attempt {
+  id                 String   @id @default(cuid())
+  sessionId          String
+  nivel              Nivel
+  acertos            Int
+  totalPerguntas     Int
+  percentual         Float
+  desbloqueouProximo Boolean
+  duracaoSegundos    Int?
+  createdAt          DateTime @default(now())
+
+  @@index([sessionId, nivel])
+  @@index([sessionId, createdAt])
+}
+
+enum Nivel {
+  iniciante
+  intermediario
+  avancado
+}
+
+enum Topico {
+  cli
+  configuracao
+  agent_sdk
+  integracoes
+}
