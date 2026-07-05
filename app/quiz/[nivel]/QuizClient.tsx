@@ -22,6 +22,9 @@ export default function QuizClient({ nivel }: { nivel: Nivel }) {
   const [perguntas, setPerguntas] = useState<Question[]>([]);
   const [indice, setIndice] = useState(0);
   const [acertos, setAcertos] = useState(0);
+  const [respostas, setRespostas] = useState<
+    { questionId: string; resposta: boolean | null }[]
+  >([]);
   const [ultimaResposta, setUltimaResposta] = useState<{
     acertou: boolean;
   } | null>(null);
@@ -64,8 +67,11 @@ export default function QuizClient({ nivel }: { nivel: Nivel }) {
 
   const perguntaAtual = perguntas[indice];
 
-  function registrarResposta(acertou: boolean) {
+  function registrarResposta(resposta: boolean | null) {
+    const acertou =
+      resposta !== null && resposta === perguntaAtual.respostaCorreta;
     if (acertou) setAcertos((a) => a + 1);
+    setRespostas((r) => [...r, { questionId: perguntaAtual.id, resposta }]);
     setUltimaResposta({ acertou });
     setFase("feedback");
   }
@@ -93,8 +99,7 @@ export default function QuizClient({ nivel }: { nivel: Nivel }) {
       body: JSON.stringify({
         sessionId,
         nivel,
-        acertos,
-        totalPerguntas: perguntas.length,
+        respostas,
         duracaoSegundos,
       }),
     });
@@ -138,13 +143,11 @@ export default function QuizClient({ nivel }: { nivel: Nivel }) {
           <Timer
             key={perguntaAtual.id}
             seconds={TEMPO_POR_PERGUNTA}
-            onExpire={() => registrarResposta(false)}
+            onExpire={() => registrarResposta(null)}
           />
           <QuestionCard
             question={perguntaAtual}
-            onAnswer={(resposta) =>
-              registrarResposta(resposta === perguntaAtual.respostaCorreta)
-            }
+            onAnswer={(resposta) => registrarResposta(resposta)}
           />
         </>
       )}

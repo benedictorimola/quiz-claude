@@ -14,6 +14,16 @@ const PROXIMO_NIVEL: Record<Nivel, Nivel | null> = {
   avancado: null,
 };
 
+const NIVEL_ANTERIOR: Record<Nivel, Nivel | null> = {
+  iniciante: null,
+  intermediario: "iniciante",
+  avancado: "intermediario",
+};
+
+export function nivelAnterior(nivel: Nivel): Nivel | null {
+  return NIVEL_ANTERIOR[nivel];
+}
+
 export const QUESTOES_POR_TENTATIVA = 10;
 export const PERCENTUAL_APROVACAO = 0.7;
 
