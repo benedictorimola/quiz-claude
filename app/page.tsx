@@ -26,9 +26,11 @@ export default function Home() {
   const unlocked = computeUnlockedLevels(attempts);
 
   return (
-    <main className="flex flex-1 flex-col items-center gap-8 px-4 py-16">
+    <main className="flex flex-1 flex-col items-center gap-8 px-4 py-10 sm:py-14">
       <div className="text-center">
-        <p className="text-sm text-accent">$ quiz-claude --iniciar</p>
+        <p className="cursor-blink text-sm text-accent">
+          $ quiz-claude --iniciar
+        </p>
         <h1 className="mt-2 text-2xl font-semibold text-text">
           Quiz Claude Code
         </h1>

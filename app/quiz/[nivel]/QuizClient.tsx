@@ -133,10 +133,19 @@ export default function QuizClient({ nivel }: { nivel: Nivel }) {
     return null;
   }
 
+  const passos = perguntas
+    .map((_, i) =>
+      i < indice || (i === indice && fase === "feedback") ? "■" : "□",
+    )
+    .join(" ");
+
   return (
     <main className="flex flex-1 flex-col items-center gap-6 p-6">
       <p className="text-text-dim">
-        Pergunta {indice + 1} de {perguntas.length}
+        Pergunta {indice + 1} de {perguntas.length}{" "}
+        <span className="text-accent" aria-hidden>
+          [{passos}]
+        </span>
       </p>
       {fase === "respondendo" && (
         <>

@@ -6,7 +6,12 @@ export default function HistoryList({ attempts }: { attempts: Attempt[] }) {
 
   return (
     <div className="w-full max-w-sm">
-      <h2 className="mb-2 text-sm text-text-dim">Histórico de tentativas</h2>
+      <h2 className="mb-2 text-sm text-text-dim">
+        <span className="text-accent" aria-hidden>
+          ${" "}
+        </span>
+        historico
+      </h2>
       <ul className="flex flex-col gap-2">
         {attempts.map((attempt) => (
           <li
