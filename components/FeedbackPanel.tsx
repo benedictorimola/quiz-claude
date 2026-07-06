@@ -14,19 +14,35 @@ export default function FeedbackPanel({
   ultimaPergunta,
 }: FeedbackPanelProps) {
   return (
-    <div className="w-full max-w-lg rounded-md border border-surface-2 bg-surface p-6">
-      <p
-        className={`text-lg font-semibold ${acertou ? "text-success" : "text-error"}`}
-      >
-        [{acertou ? "OK" : "ERRO"}] {acertou ? "Você acertou!" : "Você errou."}
-      </p>
-      <p className="mt-2 text-text-dim"># {explicacao}</p>
+    <div className="flex flex-col gap-8">
+      <div className="flex items-start gap-4">
+        <span
+          aria-hidden
+          className="font-serif text-4xl leading-none text-mark sm:text-5xl"
+        >
+          {acertou ? "✓" : "✕"}
+        </span>
+        <div className="flex flex-col gap-3 pt-1">
+          <p className="font-serif text-2xl italic text-ink sm:text-3xl">
+            {acertou ? "Correto." : "Incorreto."}
+          </p>
+          <p className="max-w-prose font-serif text-lg leading-relaxed text-ink">
+            {explicacao}
+          </p>
+        </div>
+      </div>
       <button
         type="button"
         onClick={onContinuar}
-        className="mt-6 w-full rounded-md bg-accent py-3 font-semibold text-bg transition-colors hover:bg-accent-muted"
+        className="group flex items-center justify-between border-t border-line py-5 text-left font-mono text-xs uppercase tracking-[0.14em] text-ink transition-colors hover:text-mark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-mark"
       >
-        {ultimaPergunta ? "Ver resultado" : "Continuar"}
+        <span>{ultimaPergunta ? "Ver resultado" : "Continuar"}</span>
+        <span
+          aria-hidden
+          className="transition-transform group-hover:translate-x-1 motion-reduce:transition-none"
+        >
+          →
+        </span>
       </button>
     </div>
   );

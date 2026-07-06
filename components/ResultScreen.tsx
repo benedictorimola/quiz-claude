@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Nivel } from "@prisma/client";
 import ShareButton from "@/components/ShareButton";
-import { NIVEL_LABELS } from "@/lib/quiz";
+import { NIVEL_LABELS, PERCENTUAL_APROVACAO } from "@/lib/quiz";
 
 type ResultScreenProps = {
   nivel: Nivel;
@@ -12,7 +12,43 @@ type ResultScreenProps = {
   duracaoSegundos: number | null;
   erroEnvio?: string | null;
   onRetryEnvio?: () => void;
+  desempenho?: boolean[];
 };
+
+function formatarDuracao(segundos: number): string {
+  const min = Math.floor(segundos / 60);
+  const seg = segundos % 60;
+  return min > 0 ? `${min}min${String(seg).padStart(2, "0")}` : `${seg}s`;
+}
+
+function construirNarrativa(
+  nivelLabel: string,
+  percentual: number,
+  aprovou: boolean,
+  ultimoNivel: boolean,
+) {
+  const pct = Math.round(percentual * 100);
+
+  if (aprovou) {
+    const headline =
+      percentual >= 0.9
+        ? "Você não decorou — você entende."
+        : "Você lê o manual antes do primeiro comando.";
+    const corpo = ultimoNivel
+      ? `${pct}% de acerto no nível ${nivelLabel}. Você concluiu os três níveis do quiz.`
+      : `${pct}% de acerto no nível ${nivelLabel} — acima dos 70% necessários. O próximo nível já está liberado.`;
+    return { headline, corpo };
+  }
+
+  const headline =
+    percentual >= 0.4
+      ? "Você já usou o Claude Code. Falta ler os detalhes."
+      : "Hora de abrir a documentação de novo.";
+  const corpo = `${pct}% de acerto no nível ${nivelLabel}. É preciso pelo menos ${Math.round(
+    PERCENTUAL_APROVACAO * 100,
+  )}% para liberar o próximo — vale revisar e tentar de novo.`;
+  return { headline, corpo };
+}
 
 export default function ResultScreen({
   nivel,
@@ -23,59 +59,84 @@ export default function ResultScreen({
   duracaoSegundos,
   erroEnvio,
   onRetryEnvio,
+  desempenho,
 }: ResultScreenProps) {
-  const percentual = Math.round((acertos / total) * 100);
+  const percentual = acertos / total;
+  const nivelLabel = NIVEL_LABELS[nivel];
+  const { headline, corpo } = construirNarrativa(
+    nivelLabel,
+    percentual,
+    desbloqueouProximo,
+    nivel === "avancado",
+  );
 
   return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-6 p-6 text-center sm:p-8">
-      <div className="w-full max-w-lg rounded-md border border-surface-2 bg-surface p-8">
-        <p className="text-sm text-accent">
-          &gt; resultado --nivel={NIVEL_LABELS[nivel]}
+    <div className="flex flex-col gap-10">
+      <div className="flex flex-col gap-5">
+        <h1 className="max-w-[20ch] font-serif text-[clamp(1.9rem,5vw,3.25rem)] font-medium leading-[1.1] text-ink">
+          {headline}
+        </h1>
+        <p className="font-mono text-xs tracking-[0.14em] text-ink-dim">
+          {acertos}/{total} · {Math.round(percentual * 100)}%
+          {duracaoSegundos !== null && ` · ${formatarDuracao(duracaoSegundos)}`}
         </p>
-        <p
-          className={`mt-4 text-5xl font-bold sm:text-6xl ${
-            desbloqueouProximo ? "text-success" : "text-error"
-          }`}
+      </div>
+
+      <p className="max-w-prose font-serif text-lg leading-relaxed text-ink">
+        {corpo}
+      </p>
+
+      {desempenho && desempenho.length > 0 && (
+        <div
+          className="flex flex-wrap gap-2"
+          aria-label={`Detalhe por pergunta: ${desempenho.filter(Boolean).length} de ${desempenho.length} corretas`}
         >
-          {acertos}/{total}
-        </p>
-        <p className="mt-1 text-text-dim">{percentual}% de acerto</p>
-        {duracaoSegundos !== null && (
-          <p className="mt-1 text-sm text-text-dim">
-            Tempo: {duracaoSegundos}s
+          {desempenho.map((certo, i) => (
+            <span
+              key={i}
+              aria-hidden
+              className={`font-serif text-lg ${certo ? "text-mark" : "text-ink-dim"}`}
+            >
+              {certo ? "✓" : "✕"}
+            </span>
+          ))}
+        </div>
+      )}
+
+      <div className="border-t border-line pt-6">
+        {enviando ? (
+          <p className="font-mono text-xs tracking-[0.14em] text-ink-dim">
+            Salvando resultado…
           </p>
-        )}
-        <div className="mt-4 border-t border-surface-2 pt-4">
-          {enviando ? (
-            <p className="text-text-dim">Salvando resultado…</p>
-          ) : erroEnvio ? (
-            <div className="flex flex-col items-center gap-2">
-              <p className="text-error">[ERRO] {erroEnvio}</p>
+        ) : (
+          erroEnvio && (
+            <div className="flex flex-col items-start gap-3">
+              <p className="font-mono text-xs tracking-[0.14em] text-mark">
+                {erroEnvio}
+              </p>
               {onRetryEnvio && (
                 <button
                   type="button"
                   onClick={onRetryEnvio}
-                  className="rounded-md border border-accent px-4 py-2 text-accent transition-colors hover:bg-accent/10"
+                  className="border-b border-ink pb-1 font-mono text-xs uppercase tracking-[0.14em] text-ink transition-colors hover:border-mark hover:text-mark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-mark"
                 >
                   Tentar novamente
                 </button>
               )}
             </div>
-          ) : (
-            <p className={desbloqueouProximo ? "text-success" : "text-error"}>
-              {desbloqueouProximo
-                ? "Próximo nível desbloqueado!"
-                : "Você precisa de pelo menos 70% para desbloquear o próximo nível."}
-            </p>
-          )}
-        </div>
+          )
+        )}
       </div>
-      <div className="flex flex-col items-center gap-3 sm:flex-row">
+
+      <div className="flex flex-wrap items-center gap-6">
         <ShareButton nivel={nivel} acertos={acertos} total={total} />
-        <Link href="/" className="text-accent underline">
+        <Link
+          href="/"
+          className="border-b border-ink pb-1 font-mono text-xs uppercase tracking-[0.14em] text-ink transition-colors hover:border-mark hover:text-mark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-mark"
+        >
           Voltar para o início
         </Link>
       </div>
-    </main>
+    </div>
   );
 }

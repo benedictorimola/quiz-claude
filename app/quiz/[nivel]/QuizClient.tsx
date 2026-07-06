@@ -8,7 +8,7 @@ import Timer from "@/components/Timer";
 import FeedbackPanel from "@/components/FeedbackPanel";
 import ResultScreen from "@/components/ResultScreen";
 import { useSessionId } from "@/lib/session";
-import { computeUnlockedLevels } from "@/lib/quiz";
+import { NIVEL_LABELS, computeUnlockedLevels } from "@/lib/quiz";
 
 const TEMPO_POR_PERGUNTA = 60;
 
@@ -134,85 +134,107 @@ export default function QuizClient({ nivel }: { nivel: Nivel }) {
     }
   }
 
-  if (fase === "carregando") {
-    return (
-      <main className="flex flex-1 items-center justify-center p-8">
-        <p className="text-text-dim">Carregando…</p>
-      </main>
-    );
-  }
+  const total = perguntas.length;
+  const progressPct =
+    fase === "resultado"
+      ? 100
+      : total === 0
+        ? 0
+        : ((indice + (fase === "feedback" ? 1 : 0)) / total) * 100;
 
-  if (fase === "erro") {
-    return (
-      <main className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
-        <div className="w-full max-w-lg rounded-md border border-surface-2 bg-surface p-6">
-          <p className="text-lg font-semibold text-error">[ERRO] {erro}</p>
-          <button
-            type="button"
-            onClick={tentarNovamente}
-            className="mt-6 w-full rounded-md bg-accent py-3 font-semibold text-bg transition-colors hover:bg-accent-muted"
-          >
-            Tentar novamente
-          </button>
-        </div>
-      </main>
-    );
-  }
-
-  if (fase === "resultado") {
-    return (
-      <ResultScreen
-        nivel={nivel}
-        acertos={acertos}
-        total={perguntas.length}
-        desbloqueouProximo={desbloqueouProximo}
-        enviando={enviandoResultado}
-        duracaoSegundos={duracaoFinal}
-        erroEnvio={erroEnvio}
-        onRetryEnvio={handleContinuar}
-      />
-    );
-  }
-
-  if (!perguntaAtual) {
-    return null;
-  }
-
-  const passos = perguntas
-    .map((_, i) =>
-      i < indice || (i === indice && fase === "feedback") ? "■" : "□",
-    )
-    .join(" ");
+  const desempenho = perguntas.map(
+    (p, i) => respostas[i]?.resposta === p.respostaCorreta,
+  );
 
   return (
-    <main className="flex flex-1 flex-col items-center gap-6 p-6">
-      <p className="text-text-dim">
-        Pergunta {indice + 1} de {perguntas.length}{" "}
-        <span className="text-accent" aria-hidden>
-          [{passos}]
-        </span>
-      </p>
-      {fase === "respondendo" && (
-        <>
-          <Timer
-            key={perguntaAtual.id}
-            seconds={TEMPO_POR_PERGUNTA}
-            onExpire={() => registrarResposta(null)}
-          />
-          <QuestionCard
-            question={perguntaAtual}
-            onAnswer={(resposta) => registrarResposta(resposta)}
-          />
-        </>
-      )}
-      {fase === "feedback" && ultimaResposta && (
-        <FeedbackPanel
-          acertou={ultimaResposta.acertou}
-          explicacao={perguntaAtual.explicacao}
-          onContinuar={handleContinuar}
-          ultimaPergunta={indice === perguntas.length - 1}
+    <div className="min-h-dvh w-full bg-paper text-ink">
+      <div className="fixed inset-x-0 top-0 z-10 h-[3px] bg-line">
+        <div
+          className="h-full bg-mark transition-[width] duration-300 ease-out motion-reduce:transition-none"
+          style={{ width: `${progressPct}%` }}
         />
-      )}
-    </main>
+      </div>
+
+      <main className="mx-auto grid max-w-5xl grid-cols-1 content-start gap-8 px-6 pb-12 pt-14 sm:px-10 md:grid-cols-[200px_1fr] md:gap-16 md:pt-20">
+        <aside className="flex flex-row flex-wrap items-center gap-x-4 gap-y-2 font-mono text-xs uppercase tracking-[0.14em] text-ink-dim md:flex-col md:items-start md:gap-3">
+          <span>Nível {NIVEL_LABELS[nivel]}</span>
+          {fase === "resultado" ? (
+            <span>Resultado</span>
+          ) : (
+            total > 0 && (
+              <span>
+                {String(indice + 1).padStart(2, "0")} /{" "}
+                {String(total).padStart(2, "0")}
+              </span>
+            )
+          )}
+          {fase === "respondendo" && perguntaAtual && (
+            <Timer
+              key={perguntaAtual.id}
+              seconds={TEMPO_POR_PERGUNTA}
+              onExpire={() => registrarResposta(null)}
+            />
+          )}
+        </aside>
+
+        <div
+          key={`${fase}-${perguntaAtual?.id ?? "fim"}`}
+          className="q-enter flex flex-col gap-8 md:gap-10"
+        >
+          {fase === "carregando" && (
+            <p className="font-mono text-xs uppercase tracking-[0.14em] text-ink-dim">
+              Carregando…
+            </p>
+          )}
+
+          {fase === "erro" && (
+            <div className="flex flex-col gap-6">
+              <p className="max-w-prose font-serif text-xl text-ink">
+                {erro}
+              </p>
+              <button
+                type="button"
+                onClick={tentarNovamente}
+                className="group flex w-fit items-center gap-2 border-b border-ink pb-1 font-mono text-xs uppercase tracking-[0.14em] text-ink transition-colors hover:border-mark hover:text-mark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-mark"
+              >
+                Tentar novamente
+              </button>
+            </div>
+          )}
+
+          {fase === "respondendo" && perguntaAtual && (
+            <>
+              <h1 className="max-w-[18ch] font-serif text-[clamp(1.9rem,5vw,3.25rem)] font-medium leading-[1.1] text-ink">
+                {perguntaAtual.enunciado}
+              </h1>
+              <QuestionCard onAnswer={registrarResposta} />
+            </>
+          )}
+
+          {fase === "feedback" && ultimaResposta && perguntaAtual && (
+            <FeedbackPanel
+              acertou={ultimaResposta.acertou}
+              explicacao={perguntaAtual.explicacao}
+              onContinuar={handleContinuar}
+              ultimaPergunta={indice === total - 1}
+            />
+          )}
+
+          {fase === "resultado" && (
+            <ResultScreen
+              nivel={nivel}
+              acertos={acertos}
+              total={total}
+              desbloqueouProximo={desbloqueouProximo}
+              enviando={enviandoResultado}
+              duracaoSegundos={duracaoFinal}
+              erroEnvio={erroEnvio}
+              onRetryEnvio={handleContinuar}
+              desempenho={desempenho}
+            />
+          )}
+        </div>
+      </main>
+    </div>
   );
 }

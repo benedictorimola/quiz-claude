@@ -14,22 +14,25 @@ export default function Error({
   }, [error]);
 
   return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
-      <div className="w-full max-w-lg rounded-md border border-surface-2 bg-surface p-6">
-        <p className="text-lg font-semibold text-error">
-          [ERRO] Algo deu errado.
+    <div className="min-h-dvh w-full bg-paper text-ink">
+      <main className="mx-auto flex max-w-2xl flex-col gap-8 px-6 pb-12 pt-14 sm:px-10 md:pt-20">
+        <p className="font-mono text-xs uppercase tracking-[0.14em] text-ink-dim">
+          Erro
         </p>
-        <p className="mt-2 text-text-dim">
-          # {error.message || "Erro inesperado."}
+        <h1 className="max-w-[16ch] font-serif text-[clamp(1.9rem,5vw,3.25rem)] font-medium leading-[1.1] text-ink">
+          Algo deu errado.
+        </h1>
+        <p className="max-w-prose font-serif text-lg leading-relaxed text-ink">
+          {error.message || "Erro inesperado."}
         </p>
         <button
           type="button"
           onClick={reset}
-          className="mt-6 w-full rounded-md bg-accent py-3 font-semibold text-bg transition-colors hover:bg-accent-muted"
+          className="group flex w-fit items-center gap-2 border-b border-ink pb-1 font-mono text-xs uppercase tracking-[0.14em] text-ink transition-colors hover:border-mark hover:text-mark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-mark"
         >
           Tentar novamente
         </button>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }

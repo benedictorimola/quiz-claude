@@ -8,16 +8,6 @@ type TimerProps = {
   onExpire: () => void;
 };
 
-const LARGURA_MEDIDOR = 20;
-
-function medidorAscii(remaining: number, total: number, largura = LARGURA_MEDIDOR) {
-  const preenchido = Math.max(
-    0,
-    Math.min(largura, Math.round((remaining / total) * largura)),
-  );
-  return "█".repeat(preenchido) + "·".repeat(largura - preenchido);
-}
-
 export default function Timer({ seconds, paused = false, onExpire }: TimerProps) {
   const [remaining, setRemaining] = useState(seconds);
 
@@ -39,14 +29,12 @@ export default function Timer({ seconds, paused = false, onExpire }: TimerProps)
   const low = remaining <= 10;
 
   return (
-    <div className="w-full max-w-sm">
-      <p
-        className={`text-sm leading-relaxed ${low ? "text-error" : "text-accent"}`}
-        role="timer"
-        aria-live="polite"
-      >
-        [{medidorAscii(remaining, seconds)}] {String(remaining).padStart(2, "0")}s
-      </p>
-    </div>
+    <p
+      role="timer"
+      aria-live="polite"
+      className={`font-mono text-xs tracking-[0.14em] ${low ? "text-mark" : "text-ink-dim"}`}
+    >
+      {String(remaining).padStart(2, "0")}s
+    </p>
   );
 }

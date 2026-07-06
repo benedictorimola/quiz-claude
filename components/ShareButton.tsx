@@ -31,9 +31,9 @@ export default function ShareButton({ nivel, acertos, total }: ShareButtonProps)
     <button
       type="button"
       onClick={handleClick}
-      className="rounded-md border border-accent px-4 py-2 text-accent transition-colors hover:bg-accent/10"
+      className="border-b border-ink pb-1 font-mono text-xs uppercase tracking-[0.14em] text-ink transition-colors hover:border-mark hover:text-mark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-mark"
     >
-      {copiado ? "Copiado!" : "Compartilhar resultado"}
+      {copiado ? "Copiado" : "Compartilhar resultado"}
     </button>
   );
 }

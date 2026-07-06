@@ -1,16 +1,18 @@
 "use client";
 
 import { useEffect } from "react";
-import type { Question } from "@prisma/client";
 
 type QuestionCardProps = {
-  question: Question;
   onAnswer: (resposta: boolean) => void;
   disabled?: boolean;
 };
 
+const OPCOES = [
+  { label: "Verdadeiro", valor: true, atalho: "V" },
+  { label: "Falso", valor: false, atalho: "F" },
+] as const;
+
 export default function QuestionCard({
-  question,
   onAnswer,
   disabled = false,
 }: QuestionCardProps) {
@@ -27,31 +29,23 @@ export default function QuestionCard({
   }, [disabled, onAnswer]);
 
   return (
-    <div className="w-full max-w-lg rounded-md border border-surface-2 bg-surface p-6">
-      <p className="text-lg leading-relaxed text-text">
-        <span className="text-accent" aria-hidden>
-          &gt;{" "}
-        </span>
-        {question.enunciado}
-      </p>
-      <div className="mt-6 flex gap-4">
+    <div className="flex flex-col border-t border-line">
+      {OPCOES.map(({ label, valor, atalho }) => (
         <button
+          key={label}
           type="button"
           disabled={disabled}
-          onClick={() => onAnswer(true)}
-          className="flex-1 rounded-md bg-success/20 py-4 text-lg font-semibold text-success transition-colors hover:bg-success/30 disabled:opacity-50"
+          onClick={() => onAnswer(valor)}
+          className="group flex items-center justify-between gap-4 border-b border-line py-5 text-left transition-colors hover:text-mark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-mark disabled:pointer-events-none disabled:opacity-40"
         >
-          <span className="text-sm opacity-70">[V]</span> Verdadeiro
+          <span className="font-serif text-xl text-ink transition-colors group-hover:text-mark sm:text-2xl">
+            {label}
+          </span>
+          <span className="font-mono text-xs tracking-[0.14em] text-ink-dim transition-colors group-hover:text-mark">
+            [{atalho}]
+          </span>
         </button>
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={() => onAnswer(false)}
-          className="flex-1 rounded-md bg-error/20 py-4 text-lg font-semibold text-error transition-colors hover:bg-error/30 disabled:opacity-50"
-        >
-          <span className="text-sm opacity-70">[F]</span> Falso
-        </button>
-      </div>
+      ))}
     </div>
   );
 }

@@ -10,6 +10,13 @@
   --color-text-dim: #9a9a9a;
   --color-success: #7fae6c;
   --color-error: #d97066;
+
+  /* Editorial palette — quiz question/result screens only. */
+  --color-paper: #f1efe9;
+  --color-ink: #17140f;
+  --color-ink-dim: #6f6a5e;
+  --color-line: #d9d4c7;
+  --color-mark: #a8461f;
 }
 
 @theme inline {
@@ -22,7 +29,13 @@
   --color-text-dim: var(--color-text-dim);
   --color-success: var(--color-success);
   --color-error: var(--color-error);
+  --color-paper: var(--color-paper);
+  --color-ink: var(--color-ink);
+  --color-ink-dim: var(--color-ink-dim);
+  --color-line: var(--color-line);
+  --color-mark: var(--color-mark);
   --font-mono: var(--font-jetbrains-mono);
+  --font-serif: var(--font-newsreader);
 }
 
 body {
@@ -55,6 +68,27 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .cursor-blink::after {
+    animation: none;
+  }
+}
+
+@keyframes q-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.q-enter {
+  animation: q-fade-in 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .q-enter {
     animation: none;
   }
 }
